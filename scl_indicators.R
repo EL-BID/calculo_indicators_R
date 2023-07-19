@@ -92,17 +92,35 @@ if (tipo == "censos") {
 
 if (tipo == "encuestas") {
   
-data_scl <- data_filt %>%  
-  select(-c(afroind_ci)) %>% 
-  left_join(data_lmk, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
-  left_join(data_edu, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>%
-  left_join(data_soc, by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch","idp_ci", "factor_ci", "ine01")) %>% 
-  left_join(data_gdi, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>% 
-# left_join(base_geo, by = c("ine01" = "ine01", "pais_c" = "pais")) %>% 
+  # Make sure the joining columns form a unique identifier in the right datasets
+  data_lmk <- data_lmk %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_edu <- data_edu %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_soc <- data_soc %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_gdi <- data_gdi %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  
+  # Now join the datasets
+  data_scl <- data_filt %>%  
+    select(-c(afroind_ci)) %>% 
+    left_join(data_lmk, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
+    left_join(data_edu, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>%
+    left_join(data_soc, 
+              by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch","idp_ci", "factor_ci", "ine01")) %>% 
+    left_join(data_gdi, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>% 
     rename(year = anio_c, isoalpha3 = pais_c)
   
 }
@@ -186,6 +204,8 @@ if (tipo=="censos"){
 data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC'))
 data_total <- apply(data_total,2,as.character)
 }
+
+end_time <- Sys.time() 
 
 # Now calculate the difference
 time_difference <- difftime(end_time, start_time, units = "mins")
