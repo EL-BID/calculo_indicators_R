@@ -76,33 +76,70 @@ source("var_SOC.R")
 
 if (tipo == "censos") {
   
+  # Make sure the joining columns form a unique identifier in the right datasets
+  data_lmk <- data_lmk %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_edu <- data_edu %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_soc <- data_soc %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_gdi <- data_gdi %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  
+  # Now join the datasets
   data_scl <- data_filt %>%  
     select(-c(afroind_ci)) %>% 
-    left_join(data_lmk, by = c("region_BID_c", "pais_c","geolev1",  "estrato_ci", "zona_c",
-                               "relacion_ci", "idh_ch", "factor_ch", "idp_ci", "factor_ci")) %>% 
-    left_join(data_edu, by = c("region_BID_c", "pais_c", "geolev1", "estrato_ci", "zona_c",
-                               "relacion_ci", "idh_ch", "factor_ch", "idp_ci", "factor_ci")) %>%
-    left_join(data_soc, by = c("region_BID_c", "pais_c", "geolev1", "estrato_ci", "zona_c",
-                               "relacion_ci", "idh_ch", "factor_ch", "idp_ci", "factor_ci")) %>% 
-    left_join(data_gdi, by = c("region_BID_c", "pais_c", "geolev1","estrato_ci", "zona_c",
-                               "relacion_ci", "idh_ch", "factor_ch", "idp_ci", "factor_ci")) %>% 
+    left_join(data_lmk, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
+    left_join(data_edu, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "geolev1")) %>%
+    left_join(data_soc, 
+              by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch","idp_ci", "factor_ci", "geolev1")) %>% 
+    left_join(data_gdi, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "geolev1")) %>% 
     rename(year = anio_c, isoalpha3 = pais_c)
   
 }
 
 if (tipo == "encuestas") {
   
-data_scl <- data_filt %>%  
-  select(-c(afroind_ci)) %>% 
-  left_join(data_lmk, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
-  left_join(data_edu, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>%
-  left_join(data_soc, by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch","idp_ci", "factor_ci", "ine01")) %>% 
-  left_join(data_gdi, by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                             "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>% 
-# left_join(base_geo, by = c("ine01" = "ine01", "pais_c" = "pais")) %>% 
+  # Make sure the joining columns form a unique identifier in the right datasets
+  data_lmk <- data_lmk %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_edu <- data_edu %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_soc <- data_soc %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  data_gdi <- data_gdi %>% 
+    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
+  
+  # Now join the datasets
+  data_scl <- data_filt %>%  
+    select(-c(afroind_ci)) %>% 
+    left_join(data_lmk, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
+    left_join(data_edu, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>%
+    left_join(data_soc, 
+              by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch","idp_ci", "factor_ci", "ine01")) %>% 
+    left_join(data_gdi, 
+              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
+                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>% 
     rename(year = anio_c, isoalpha3 = pais_c)
   
 }
@@ -136,7 +173,7 @@ num_cores <- detectCores() - 1  # number of cores to use, often set to one less 
 cl <- makeCluster(num_cores)
 
 # Export data, indicator definitions and the necessary functions to the cluster
-clusterExport(cl, c("data_scl", "indicator_definitions", "scl_pct", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter"))
+clusterExport(cl, c("data_scl", "indicator_definitions", "scl_pct", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter", "drop_na"))
 
 # Load necessary packages on each node of the cluster
 clusterEvalQ(cl, {
@@ -164,28 +201,30 @@ stopCluster(cl)
 
 # remove NA 
 
-# disaggregations to remove NA
-# to do add this to the code so that they are removed
+#disaggregations to remove NA
+#to do add this to the code so that they are removed
 vars_to_check <- c("sex", "disability", "ethnicity", "migration", "area", "quintile", "age", "value")
 
 data_total <- data_total %>%
   purrr::reduce(vars_to_check, function(data, var) {
-    data %>% 
-      dplyr::filter(!is.na(.data[[var]])) %>% 
+    data %>%
+      dplyr::filter(!is.na(.data[[var]])) %>%
       dplyr::filter(!is.infinite(.data[[var]]))
-      
+
   }, .init = .)
 
 # showing NA as NA instead of zeros
 
-data_total <- data_total %>%
-  filter(!(is.na(cv) & value==0 & level==0 & se==0))
+ data_total <- data_total %>%
+   filter(!(is.na(cv) & value==0 & level==0 & se==0))
 
 # if census then add to the name of the results
 if (tipo=="censos"){
 data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC'))
 data_total <- apply(data_total,2,as.character)
 }
+
+end_time <- Sys.time() 
 
 # Now calculate the difference
 time_difference <- difftime(end_time, start_time, units = "mins")

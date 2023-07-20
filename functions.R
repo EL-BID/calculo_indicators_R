@@ -62,17 +62,11 @@ scl_pct <- function(.data, .nombre, .condicion1, .condicion2, .group_vars) {
   # Renaming 'age_lmk' or 'age_scl' to 'age' if they are present in .group_vars
   if('age_lmk' %in% .group_vars){
     data_aux <- data_aux %>% rename(age = age_lmk)
-  }
-  
-  if('age_scl' %in% .group_vars){
+  } else if('age_scl' %in% .group_vars){
     data_aux <- data_aux %>% rename(age = age_scl)
-  }
-  
-  if('age_15_64_lmk' %in% .group_vars){
+  } else if('age_15_64_lmk' %in% .group_vars){
     data_aux <- data_aux %>% rename(age = age_15_64_lmk)
-  }
-  
-  if('age_15_29_lmk' %in% .group_vars){
+  } else if('age_15_29_lmk' %in% .group_vars){
     data_aux <- data_aux %>% rename(age = age_15_29_lmk)
   }
   
@@ -265,3 +259,5 @@ calculate_indicators <- function(i, data, indicator_definitions) {
   
   return(res)
 }
+
+

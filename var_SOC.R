@@ -29,7 +29,7 @@ if (tipo == "censos") {
                                 TRUE ~ 0),
            single_member = miembros_ci == 1,
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
-                               edad_ci>=0 & edad_ci<5 ~"05_14",
+                               edad_ci>=5 & edad_ci<15 ~"05_14",
                                edad_ci>=15 & edad_ci<25 ~"15_24",
                                edad_ci>=25 & edad_ci<65 ~"25_64",
                                edad_ci>=65 & edad_ci<99 ~"65+", 
@@ -119,7 +119,6 @@ if (tipo == "encuestas") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
   
-  
   data_soc <- data_filt %>%
     # create principal variables
     mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
@@ -132,7 +131,7 @@ if (tipo == "encuestas") {
            ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ynlm_ci), na.rm = TRUE)),
            yallsr18 = if_else(edad_ci >= 18, ytot_ci, NA_real_),
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
-                               edad_ci>=0 & edad_ci<5 ~"05_14",
+                               edad_ci>=5 & edad_ci<15 ~"05_14",
                                edad_ci>=15 & edad_ci<25 ~"15_24",
                                edad_ci>=25 & edad_ci<65 ~"25_64",
                                edad_ci>=65 & edad_ci<99 ~"65+", 
@@ -185,21 +184,18 @@ if (tipo == "encuestas") {
       #demografia dependencia 
       depen_ch = nmiembros_ch / perceptor_ch
     ) 
-  # creating an if to see if pc_ytot_ch has a value%>% 
-  if (length(unique(data_soc$pc_ytot_ch))>5){ 
+  
+  # Calculate quintiles
   data_soc <- data_soc %>%
     arrange(pc_ytot_ch) %>%
     mutate(
       quintile = cut(pc_ytot_ch, 
                      breaks = quantile(pc_ytot_ch, 
                                        probs = seq(0, 1, by = 0.2), 
-                                       na.rm = TRUE, 
-                                       names = FALSE),
+                                       na.rm = TRUE),
+                     include.lowest = TRUE,
                      labels = c("quintile_1", "quintile_2", "quintile_3", "quintile_4", "quintile_5"))
-      )
-  } else{
-    data_soc <- data_soc %>% mutate(quintile = NA_character_)
-  }
+    )
   
   # then select only added variables and specific columns
   new_column_names <- setdiff(names(data_soc), initial_column_names)
@@ -209,7 +205,6 @@ if (tipo == "encuestas") {
                            "idh_ch", "factor_ch", "factor_ci", "idp_ci")
   
   data_soc <- select(data_soc, all_of(select_column_names)) 
-  
   
 }
 
