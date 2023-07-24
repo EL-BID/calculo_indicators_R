@@ -220,10 +220,26 @@ data_total <- data_total %>%
 
 # if census then add to the name of the results
 if (tipo=="censos"){
-data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC'))
-data_total <- apply(data_total,2,as.character)
+data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC',sep = ""))
+data_total <- as.data.frame(apply(data_total,2,as.character))
 }
 
+ data_total <- data_total %>% mutate(# adding iddate
+                       iddate = "year",
+                       #substituing in geolev1 Total by country and name to idgeo
+                       geolev1 = ifelse(geolev1=="Total","country",geolev1),
+                       # adding fuente
+                       fuente = ifelse(tipo=="censos",paste(pais,"-IPUMS",sep = ""),
+                                       paste(pais,"-",str_extract(base, paste("(?<=",pais,"//).+(?=//data_arm)",sep = "")),sep = "")),
+                       quality_check = ""
+                       ) %>% rename("idgeo"="geolev1")
+ 
+ 
+# reorder by column name
+data_total <- data_total[, c("iddate", "year", "idgeo","isoalpha3","fuente","indicator","area",
+                 "quintile","sex","education_level","age","ethnicity","disability","migration",
+                 "value","level","se","cv","sample","quality_check")]
+ 
 end_time <- Sys.time() 
 
 # Now calculate the difference
