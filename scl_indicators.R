@@ -237,7 +237,7 @@ data_total <- as.data.frame(apply(data_total,2,as.character))
  
 # reorder by column name
 data_total <- data_total[, c("iddate", "year", "idgeo","isoalpha3","fuente","indicator","area",
-                 "quintile","sex","age","ethnicity","disability","migration",
+                 "quintile","sex","education_level","age","ethnicity","disability","migration",
                  "value","level","se","cv","sample","quality_check")]
  
 end_time <- Sys.time() 
