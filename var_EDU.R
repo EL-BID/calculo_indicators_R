@@ -11,7 +11,7 @@ if (tipo == "censos") {
     mutate(age_25_mas = ifelse(edad_ci>=25, 1, 0),
            #2. Ninis
            nini = ifelse(asiste_ci==0 & condocup_ci==3,1,0),
-           nini = ifelse(is.na(asiste_ci) | is.na(condocup_ci),NA,nini),
+           #nini = ifelse(is.na(asiste_ci) | is.na(condocup_ci),NA,nini),
            age_prim_c = case_when((pais_c=="COL"| pais_c=="BRA") & (edad_ci>=6 & edad_ci<=10) ~ 1,
                                   (pais_c=="COL"| pais_c=="BRA") ~ 0,
                                   (pais_c=="BRB") & (edad_ci>=5&edad_ci<=10) ~ 1,
