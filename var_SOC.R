@@ -34,7 +34,8 @@ if (tipo == "censos") {
                                edad_ci>=25 & edad_ci<65 ~"25_64",
                                edad_ci>=65 & edad_ci<99 ~"65+", 
                                TRUE ~NA_character_)) %>%
-    mutate(ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ynlm_ci), na.rm=TRUE)),
+    mutate(ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ylnm_ci, ynlm_ci, ynlnm_ci), na.rm=TRUE)),
+           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) is.na(ynlnm_ci),NA_real, ytot_ci),
            yallsr18 = ifelse(edad_ci>=18, ytot_ci, NA)) %>%
     group_by(anio_c, pais_c, idh_ch) %>%
     mutate(ytot_ch = ifelse(single_member, sum(ytot_ci,na.rm=TRUE), NA),
@@ -50,7 +51,7 @@ if (tipo == "censos") {
            shareylmfem_ch = hhywomen / hhyallsr,
            perceptor_ci = if_else(ytot_ci > 0, sum(miembros_ci, na.rm = TRUE), NA_real_),
            perceptor_ch = suppressWarnings(max(perceptor_ci, na.rm = TRUE))) %>%
-    ungroup() %>% 
+    ungroup() %>%
     # Mutate to compute additional variables
     mutate(
       # Income per capita definition 
@@ -128,7 +129,8 @@ if (tipo == "encuestas") {
            pob18_ci = as.numeric(edad_ci <= 18),
            pob65_ci = as.numeric(edad_ci >= 65),
            miembros_ci = as.numeric(miembros_ci == 1),
-           ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ynlm_ci), na.rm = TRUE)),
+           ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ylnm_ci, ynlm_ci, ynlnm_ci), na.rm = TRUE)),
+           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) is.na(ynlnm_ci),NA_real, ytot_ci),
            yallsr18 = if_else(edad_ci >= 18, ytot_ci, NA_real_),
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
                                edad_ci>=5 & edad_ci<15 ~"05_14",
