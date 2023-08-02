@@ -35,7 +35,7 @@ if (tipo == "censos") {
                                edad_ci>=65 & edad_ci<99 ~"65+", 
                                TRUE ~NA_character_)) %>%
     mutate(ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ylnm_ci, ynlm_ci, ynlnm_ci), na.rm=TRUE)),
-           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) is.na(ynlnm_ci),NA_real, ytot_ci),
+           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) & is.na(ynlnm_ci),NA_real_, ytot_ci),
            yallsr18 = ifelse(edad_ci>=18, ytot_ci, NA)) %>%
     group_by(anio_c, pais_c, idh_ch) %>%
     mutate(ytot_ch = ifelse(single_member, sum(ytot_ci,na.rm=TRUE), NA),
@@ -130,7 +130,7 @@ if (tipo == "encuestas") {
            pob65_ci = as.numeric(edad_ci >= 65),
            miembros_ci = as.numeric(miembros_ci == 1),
            ytot_ci = pmax(0, rowSums(cbind(ylm_ci, ylnm_ci, ynlm_ci, ynlnm_ci), na.rm = TRUE)),
-           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) is.na(ynlnm_ci),NA_real, ytot_ci),
+           ytot_ci = ifelse(is.na(ylm_ci) & is.na(ylnm_ci) & is.na(ynlm_ci) & is.na(ynlnm_ci),NA_real_, ytot_ci),
            yallsr18 = if_else(edad_ci >= 18, ytot_ci, NA_real_),
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
                                edad_ci>=5 & edad_ci<15 ~"05_14",
