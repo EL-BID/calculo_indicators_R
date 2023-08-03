@@ -34,7 +34,7 @@ if (tipo == "censos") {
            hhyallsr = pmax(0, hhyallsr),
            ywomen = sum(yallsr18[sexo_ci == 2], na.rm = TRUE),
            hhywomen = max(ywomen, na.rm = TRUE),
-           jefa_ch = ifelse(jefe_ci==1, sum(jefa_ci),0),
+           jefa_ch = if_else(jefe_ci == 1, sum(jefa_ci, na.rm = TRUE), 0),
            miembro6_ch = as.numeric(sum(edad_ci < 6 & relacion_ci > 0 & relacion_ci <= 5) > 0),
            miembro65_ch = as.numeric(sum(edad_ci >= 65 & relacion_ci > 0 & relacion_ci <= 5) > 0),
            miembro6y16_ch = as.numeric(sum(edad_ci >=6 & edad_ci <=16  & relacion_ci > 0 & relacion_ci <= 5) > 0),
