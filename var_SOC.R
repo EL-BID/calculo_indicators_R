@@ -9,24 +9,14 @@ if (tipo == "censos") {
   
   
   data_soc <- data_filt %>% 
-    mutate(jefa_ci = case_when(jefe_ci==1 & sexo_ci==2 ~ 1, 
-                               jefe_ci==1 & sexo_ci==1 ~ 0, 
-                               TRUE ~ NA_real_),
+    mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
            ylm_ci=as.double(ylm_ci), ynlm_ci=as.double(ynlm_ci),
            urbano_ci = case_when(zona_c == 1 ~ 1, 
                                  is.na(zona_c) ~NA_real_, 
                                  TRUE ~ 0), 
-           pob_sfd = case_when(sexo_ci == 2 ~ 1, 
-                               afroind_ci == 1 ~ 1, 
-                               afroind_ci == 2 ~ 1, 
-                               dis_ci == 1 ~ 1, 
-                               TRUE ~ 0), # variable requested for SFD - GDI
-           pob18_ci = case_when(edad_ci<=18 ~ 1, 
-                                is.na(edad_ci) ~ NA_real_, 
-                                TRUE ~ 0), 
-           pob65_ci = case_when(edad_ci>=65 ~ 1, 
-                                is.na(edad_ci) ~ NA_real_, 
-                                TRUE ~ 0),
+           pob_sfd = if_else(sexo_ci == 2 | afroind_ci == 1 | afroind_ci == 2 | dis_ci == 1, 1, 0),  # variable requested for SFD - GDI
+           pob18_ci = as.numeric(edad_ci <= 18),
+           pob65_ci = as.numeric(edad_ci >= 65),
            single_member = miembros_ci == 1,
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
                                edad_ci>=5 & edad_ci<15 ~"05_14",
