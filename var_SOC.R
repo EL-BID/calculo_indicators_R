@@ -6,9 +6,21 @@ if (tipo == "censos") {
   
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
+  is_haven_labelled <- function(x) {
+    inherits(x, "haven_labelled")
+  }
+  
+  # Convert all haven_labelled columns to numeric
+  data_filt <- data_filt %>%
+    mutate(across(where(is_haven_labelled), as.numeric))
+  num_cores <- as.integer((detectCores() - 1)/2)  # number of cores to use, often set to one less than the total available
+  
+  cluster <- new_cluster(num_cores)
+  cluster_library(cluster, "dplyr")  
+  initial_column_names <- names(data_filt)
   
   
-  data_soc <- data_filt %>% 
+  data_soc <- data_filt %>% group_by(geolev1) %>%partition(cluster) %>% 
     mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
            ylm_ci=as.double(ylm_ci), ynlm_ci=as.double(ynlm_ci),
            urbano_ci = case_when(zona_c == 1 ~ 1, 
@@ -74,7 +86,8 @@ if (tipo == "censos") {
       hacinamiento_ch = nmiembros_ch / cuartos_ch,
       #demografia dependencia 
       depen_ch = nmiembros_ch / perceptor_ch
-    )
+    )%>% 
+    collect()
 
   # creating an if to see if pc_ytot_ch has a value%>% 
   if (length(unique(data_soc$pc_ytot_ch))>5){ 
@@ -110,8 +123,8 @@ if (tipo == "encuestas") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
   
-  data_soc <- data_filt %>%
-    # create principal variables
+  
+  data_soc <- data_filt %>%  
     mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
            ylm_ci = as.double(ylm_ci), 
            ynlm_ci = as.double(ynlm_ci),
