@@ -6,7 +6,7 @@
 
   # code that returns the address of the survey
   source("directory_periods.R")
-  
+  message(paste("Loading database ",pais,": ", anio))
   base <- functionRoundAndSurvey(pais,tipo,anio)
   
   # Read data
@@ -62,7 +62,7 @@ if (tipo == "encuestas") {
 }
 
 #### Compute intermediate variables  ####
-
+message(paste("Loading intermediate variables ",pais,": ", anio))
 source("var_LMK.R")
 
 source("var_EDU.R")
@@ -149,7 +149,7 @@ rm("data_lmk", "data_edu", "data_soc", "data_gdi", "data", "data_filt")
 gc()
 
 # Read all functions needed for computation 
-
+message(paste("Preparing calculations for parallelization ",pais,": ", anio))
 source("functions.R")
 
 ##### Use parallel programming -----
@@ -157,7 +157,7 @@ source("functions.R")
 # read the indicators definitions in the csv
 indicator_definitions <- read.csv("Inputs/idef.csv")
 # if needed you can filter here by theme
-
+num_cores <- detectCores() - 1
 
 if (tipo=="censos"){
   indicator_definitions <- indicator_definitions %>% filter(includedInCensus==1)
@@ -167,9 +167,10 @@ if (tipo=="censos"){
     ### adding to disagregation column, geolevel1
     indicator_definitions$disaggregation <- sub(",isoalpha3", ",geolev1,isoalpha3", indicator_definitions$disaggregation)
   }
+  num_cores <- 2
 }
 
-num_cores <- detectCores() - 1  # number of cores to use, often set to one less than the total available
+  # number of cores to use, often set to one less than the total available
 cl <- makeCluster(num_cores)
 
 # Export data, indicator definitions and the necessary functions to the cluster
@@ -189,7 +190,7 @@ is_haven_labelled <- function(x) {
 # Convert all haven_labelled columns to numeric
 data_scl <- data_scl %>%
   mutate(across(where(is_haven_labelled), as.numeric))
-
+message(paste("Calculating indicators ",pais,": ", anio))
 # Call the function in parallel
 results <- parLapply(cl, 1:nrow(indicator_definitions), calculate_indicators, data_scl, indicator_definitions)
 
@@ -200,7 +201,7 @@ data_total <- do.call(rbind, results)
 stopCluster(cl)
 
 # remove NA 
-
+message(paste("Quality analysis ",pais,": ", anio))
 #disaggregations to remove NA
 #to do add this to the code so that they are removed
 vars_to_check <- c("sex", "disability", "ethnicity", "migration", "area", "quintile", "age", "value")
@@ -218,11 +219,6 @@ data_total <- data_total %>%
  data_total <- data_total %>%
    filter(!(is.na(cv) & value==0 & level==0 & se==0))
 
-# if census then add to the name of the results
-if (tipo=="censos"){
-data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC',sep = ""))
-data_total <- as.data.frame(apply(data_total,2,as.character))
-}
 
  data_total <- data_total %>% mutate(# adding iddate
                        iddate = "year",
@@ -234,16 +230,37 @@ data_total <- as.data.frame(apply(data_total,2,as.character))
                        quality_check = ""
                        ) %>% rename("idgeo"="geolev1")
  
- 
+
+# left join of dictionary and data_total to know the function 
+indicator_definitionsv2 <- indicator_definitions  %>% select(indicator_name,aggregation_function)
+data_total <- left_join(data_total, indicator_definitionsv2 ,join_by("indicator"=="indicator_name"))
+
+data_total <- data_total %>% mutate(
+  muestra_baja = ifelse(!is.na(sample),as.numeric(sample<30),NA_real_),
+  se_fuera05 = ifelse(!is.na(se),as.numeric(aggregation_function=="pct"&(value<=0.5 & se>(value^(2/3))/9)),NA_real_),
+  se_fuera = ifelse(!is.na(se),as.numeric(aggregation_function=="pct"&value>0.5 & (se>((1-value)^(2/3))/9)),NA_real_),
+  quality_check = NA_real_,
+  quality_check = case_when((muestra_baja==0 & (se_fuera05==0|se_fuera==0))~1,
+                            (muestra_baja==0 & (se_fuera05==1|se_fuera==1))~2,
+                            muestra_baja==1~3,
+                            TRUE~NA_real_)
+)
+
 # reorder by column name
 data_total <- data_total[, c("iddate", "year", "idgeo","isoalpha3","fuente","indicator","area",
-                 "quintile","sex","education_level","age","ethnicity","disability","migration",
-                 "value","level","se","cv","sample","quality_check")]
- 
+                             "quintile","sex","education_level","age","ethnicity","disability","migration",
+                             "value","level","se","cv","sample","quality_check")]
+
+# if census then add to the name of the results
+if (tipo=="censos"){
+  data_total$indicator <- lapply(data_total$indicator, function(x) paste(x,'_PHC',sep = ""))
+  data_total <- as.data.frame(apply(data_total,2,as.character))
+}
+
 end_time <- Sys.time() 
 
 # Now calculate the difference
 time_difference <- difftime(end_time, start_time, units = "mins")
 
-print(paste(pais,anio, time_difference, "minutes"))
+message(paste(pais,anio, time_difference, "minutes"))
 

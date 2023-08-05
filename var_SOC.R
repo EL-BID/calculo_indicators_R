@@ -6,27 +6,29 @@ if (tipo == "censos") {
   
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
+  is_haven_labelled <- function(x) {
+    inherits(x, "haven_labelled")
+  }
+  
+  # Convert all haven_labelled columns to numeric
+  data_filt <- data_filt %>%
+    mutate(across(where(is_haven_labelled), as.numeric))
+  num_cores <- as.integer((detectCores() - 1)/2)  # number of cores to use, often set to one less than the total available
+  
+  cluster <- new_cluster(num_cores)
+  cluster_library(cluster, "dplyr")  
+  initial_column_names <- names(data_filt)
   
   
-  data_soc <- data_filt %>% 
-    mutate(jefa_ci = case_when(jefe_ci==1 & sexo_ci==2 ~ 1, 
-                               jefe_ci==1 & sexo_ci==1 ~ 0, 
-                               TRUE ~ NA_real_),
+  data_soc <- data_filt %>% group_by(geolev1) %>%partition(cluster) %>% 
+    mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
            ylm_ci=as.double(ylm_ci), ynlm_ci=as.double(ynlm_ci),
            urbano_ci = case_when(zona_c == 1 ~ 1, 
                                  is.na(zona_c) ~NA_real_, 
                                  TRUE ~ 0), 
-           pob_sfd = case_when(sexo_ci == 2 ~ 1, 
-                               afroind_ci == 1 ~ 1, 
-                               afroind_ci == 2 ~ 1, 
-                               dis_ci == 1 ~ 1, 
-                               TRUE ~ 0), # variable requested for SFD - GDI
-           pob18_ci = case_when(edad_ci<=18 ~ 1, 
-                                is.na(edad_ci) ~ NA_real_, 
-                                TRUE ~ 0), 
-           pob65_ci = case_when(edad_ci>=65 ~ 1, 
-                                is.na(edad_ci) ~ NA_real_, 
-                                TRUE ~ 0),
+           pob_sfd = if_else(sexo_ci == 2 | afroind_ci == 1 | afroind_ci == 2 | dis_ci == 1, 1, 0),  # variable requested for SFD - GDI
+           pob18_ci = as.numeric(edad_ci <= 18),
+           pob65_ci = as.numeric(edad_ci >= 65),
            single_member = miembros_ci == 1,
            age_scl = case_when(edad_ci>=0 & edad_ci<5 ~"00_04",
                                edad_ci>=5 & edad_ci<15 ~"05_14",
@@ -44,7 +46,7 @@ if (tipo == "censos") {
            hhyallsr = pmax(0, hhyallsr),
            ywomen = sum(yallsr18[sexo_ci == 2], na.rm = TRUE),
            hhywomen = max(ywomen, na.rm = TRUE),
-           jefa_ch = ifelse(jefe_ci==1, sum(jefa_ci),0),
+           jefa_ch = if_else(jefe_ci == 1, sum(jefa_ci, na.rm = TRUE), 0),
            miembro6_ch = as.numeric(sum(edad_ci < 6 & relacion_ci > 0 & relacion_ci <= 5) > 0),
            miembro65_ch = as.numeric(sum(edad_ci >= 65 & relacion_ci > 0 & relacion_ci <= 5) > 0),
            miembro6y16_ch = as.numeric(sum(edad_ci >=6 & edad_ci <=16  & relacion_ci > 0 & relacion_ci <= 5) > 0),
@@ -84,7 +86,8 @@ if (tipo == "censos") {
       hacinamiento_ch = nmiembros_ch / cuartos_ch,
       #demografia dependencia 
       depen_ch = nmiembros_ch / perceptor_ch
-    )
+    )%>% 
+    collect()
 
   # creating an if to see if pc_ytot_ch has a value%>% 
   if (length(unique(data_soc$pc_ytot_ch))>5){ 
@@ -120,8 +123,8 @@ if (tipo == "encuestas") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
   
-  data_soc <- data_filt %>%
-    # create principal variables
+  
+  data_soc <- data_filt %>%  
     mutate(jefa_ci = if_else(jefe_ci == 1, as.numeric(sexo_ci == 2), NA_real_),
            ylm_ci = as.double(ylm_ci), 
            ynlm_ci = as.double(ynlm_ci),
