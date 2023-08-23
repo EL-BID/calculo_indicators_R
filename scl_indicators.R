@@ -8,9 +8,6 @@
   source("directory_periods.R")
   message(paste("Loading database ",pais,": ", anio))
   base <- functionRoundAndSurvey(pais,tipo,anio)
-  
-  # Read data
-  data <- read_dta(base)
  
   
   if (tipo == "censos") {
@@ -19,20 +16,22 @@
     
     varlist_censos <- variables_censos %>% 
       filter(!is.na(Variable))
-
+    
     # Get the names of the variables that need to be in the data
     required_vars <- unique(varlist_censos$Variable)
-    
+    # Read data
+    data_filt <- read_dta(base,col_select=any_of(required_vars))
+    # Remove data we do not need and free memory
     # Check which of the required variables are not in the data
-    missing_vars <- setdiff(required_vars, colnames(data))
+    missing_vars <- setdiff(required_vars, colnames(data_filt))
     
     # Add the missing variables to the data with NA values
     for (var in missing_vars) {
-      data[[var]] <- NA
-    }    
-        
-    data_filt <- data[,varlist_censos$Variable]
-    
+      data_filt[[var]] <- NA
+    }
+    if (all(is.na(data_filt$factor_ci))){
+      data_filt[["factor_ci"]] <- 1
+    }
   }
   
 if (tipo == "encuestas") {
@@ -47,17 +46,16 @@ if (tipo == "encuestas") {
   
   # Get the names of the variables that need to be in the data
   required_vars <- unique(variables_encuestas$Variable)
-  
+  # Read data
+  data_filt <- read_dta(base,col_select=any_of(required_vars))  
   # Check which of the required variables are not in the data
-  missing_vars <- setdiff(required_vars, colnames(data))
+  missing_vars <- setdiff(required_vars, colnames(data_filt))
   
   # Add the missing variables to the data with NA values
   for (var in missing_vars) {
-    data[[var]] <- NA
+    data_filt[[var]] <- NA
   }
   
-  # creating empty column for each missing variable in R
-  data_filt <- data[,unique(variables_encuestas$Variable)]
   
 }
 
@@ -77,76 +75,26 @@ source("var_SOC.R")
 if (tipo == "censos") {
   
   # Make sure the joining columns form a unique identifier in the right datasets
-  data_lmk <- data_lmk %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
+  data_filt <- data_filt %>% 
+    distinct(across(c("region_BID_c", "isoalpha3","estrato_ci", "zona_c","geolev1",
                       "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_edu <- data_edu %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_soc <- data_soc %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_gdi <- data_gdi %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  
-  # Now join the datasets
-  data_scl <- data_filt %>%  
-    select(-c(afroind_ci)) %>% 
-    left_join(data_lmk, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","geolev1",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
-    left_join(data_edu, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "geolev1")) %>%
-    left_join(data_soc, 
-              by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch","idp_ci", "factor_ci", "geolev1")) %>% 
-    left_join(data_gdi, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "geolev1")) %>% 
-    rename(year = anio_c, isoalpha3 = pais_c)
   
 }
 
 if (tipo == "encuestas") {
   
   # Make sure the joining columns form a unique identifier in the right datasets
-  data_lmk <- data_lmk %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
+  data_filt <- data_filt %>% 
+    distinct(across(c("region_BID_c", "isoalpha3","estrato_ci", "zona_c","ine01",
                       "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_edu <- data_edu %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_soc <- data_soc %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  data_gdi <- data_gdi %>% 
-    distinct(across(c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                      "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")), .keep_all = TRUE)
-  
-  # Now join the datasets
-  data_scl <- data_filt %>%  
-    select(-c(afroind_ci)) %>% 
-    left_join(data_lmk, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c","ine01",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "factor_ch")) %>% 
-    left_join(data_edu, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>%
-    left_join(data_soc, 
-              by = c("region_BID_c", "pais_c", "estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch","idp_ci", "factor_ci", "ine01")) %>% 
-    left_join(data_gdi, 
-              by = c("region_BID_c", "pais_c","estrato_ci", "zona_c", "factor_ch",
-                     "relacion_ci", "idh_ch", "idp_ci", "factor_ci", "ine01")) %>% 
-    rename(year = anio_c, isoalpha3 = pais_c)
+
   
 }
 
 # Remove data we do not need and free memory
-rm("data_lmk", "data_edu", "data_soc", "data_gdi", "data", "data_filt")
-gc()
+  rm("variables_encuestas", "varlist_censos", "variables_censos", "required_vars","missing_vars")
+  rm("data", "data_aux", "data_scl", "data_total")
+  gc()
 
 # Read all functions needed for computation 
 message(paste("Preparing calculations for parallelization ",pais,": ", anio))
@@ -155,7 +103,12 @@ source("functions.R")
 ##### Use parallel programming -----
 
 # read the indicators definitions in the csv
+if (tipo=="encuestas"){
 indicator_definitions <- read.csv("Inputs/idef.csv")
+}
+if (tipo=="censos"){
+  indicator_definitions <- read.csv("Inputs/idefCensos.csv")
+}
 # if needed you can filter here by theme
 num_cores <- detectCores() - 1
 
@@ -167,14 +120,14 @@ if (tipo=="censos"){
     ### adding to disagregation column, geolevel1
     indicator_definitions$disaggregation <- sub(",isoalpha3", ",geolev1,isoalpha3", indicator_definitions$disaggregation)
   }
-  num_cores <- 2
+  num_cores <- 3
 }
 
   # number of cores to use, often set to one less than the total available
 cl <- makeCluster(num_cores)
 
 # Export data, indicator definitions and the necessary functions to the cluster
-clusterExport(cl, c("data_scl", "indicator_definitions", "scl_pct", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter", "drop_na"))
+clusterExport(cl, c("data_filt", "indicator_definitions", "scl_pct", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter", "drop_na"))
 
 # Load necessary packages on each node of the cluster
 clusterEvalQ(cl, {
@@ -188,12 +141,14 @@ is_haven_labelled <- function(x) {
 }
 
 # Convert all haven_labelled columns to numeric
-data_scl <- data_scl %>%
+data_filt <- data_filt %>%
   mutate(across(where(is_haven_labelled), as.numeric))
 message(paste("Calculating indicators ",pais,": ", anio))
 # Call the function in parallel
-results <- parLapply(cl, 1:nrow(indicator_definitions), calculate_indicators, data_scl, indicator_definitions)
+results <- parLapply(cl, 1:nrow(indicator_definitions), calculate_indicators, data_filt, indicator_definitions)
 
+rm("data_filt")
+gc()
 # Combine results
 data_total <- do.call(rbind, results)
 
