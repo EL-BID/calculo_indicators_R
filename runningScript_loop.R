@@ -44,16 +44,14 @@ for (i in 1:nrow(unique_combinations)) {
     
     if (tipo == "encuestas") {
       write.csv(data_total, paste("Outputs/indicadores_encuestas_hogares_", pais, "_", anio, ".csv", sep = ""), row.names = FALSE)
+      rm("data_scl","data_total","data_aux")
+      gc()      
     }
     
     # Add more conditions for other types if needed
     if (tipo == "censos") {
       write.csv(data_total, paste("Outputs/indicadores_censos_hogares_", pais, "_", anio, ".csv", sep = ""), row.names = FALSE)
       rm("data","data_total","data_aux","data_scl")
-      gc()
-      gc()
-      gc()
-      gc()
       gc()
     }
     
