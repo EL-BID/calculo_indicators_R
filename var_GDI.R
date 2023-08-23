@@ -4,7 +4,7 @@
 
 if (tipo == "censos") {
   
-  data_gdi <- data_filt %>% 
+  data_filt <- data_filt %>% 
     mutate(disability =  case_when(dis_ci == 1 ~ "person_with_disability",
                                    dis_ci == 0 ~"person_with_no_disability",  
                                    TRUE ~ NA_character_), 
@@ -24,13 +24,6 @@ if (tipo == "censos") {
                               ifelse(migrante_ci == 0, "Non-migrant", NA_character_))) 
   
   # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_gdi), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "geolev1","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_gdi <- select(data_gdi, all_of(select_column_names))
   
 }
 
@@ -41,7 +34,7 @@ if (tipo == "encuestas") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
 
-data_gdi <- data_filt %>% 
+  data_filt <- data_filt %>% 
   mutate(disability =  case_when(dis_ci == 1 ~ "person_with_disability",
                                  dis_ci == 0 ~"person_with_no_disability", 
                                  TRUE ~ NA_character_), 
@@ -60,13 +53,6 @@ data_gdi <- data_filt %>%
          migration = ifelse(migrante_ci == 1, "Migrant", 
                             ifelse(migrante_ci == 0, "Non-migrant", NA_character_))) 
 
-# then select only added variables and specific columns
-new_column_names <- setdiff(names(data_gdi), initial_column_names)
 
-select_column_names <- c(new_column_names, 
-                         "region_BID_c", "pais_c", "ine01","estrato_ci", "zona_c", "relacion_ci", 
-                         "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-
-data_gdi <- select(data_gdi, all_of(select_column_names))
 
 }
