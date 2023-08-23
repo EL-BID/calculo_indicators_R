@@ -6,6 +6,7 @@ library(haven)
 library(srvyr)
 library(readxl)
 library(parallel)
+library(multidplyr)
 options(scipen = 999)
 # select between "censos"/"encuestas"
 tipo <- "censos"
@@ -48,6 +49,12 @@ for (i in 1:nrow(unique_combinations)) {
     # Add more conditions for other types if needed
     if (tipo == "censos") {
       write.csv(data_total, paste("Outputs/indicadores_censos_hogares_", pais, "_", anio, ".csv", sep = ""), row.names = FALSE)
+      rm("data","data_total","data_aux","data_scl")
+      gc()
+      gc()
+      gc()
+      gc()
+      gc()
     }
     
     # Add more code here if needed
