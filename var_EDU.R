@@ -5,9 +5,8 @@
 if (tipo == "censos") {
   
   # creating a vector with initial column names
-  initial_column_names <- names(data_filt)
   
-  data_edu <- data_filt %>% 
+  data_filt <- data_filt %>% 
     mutate(age_25_mas = ifelse(edad_ci>=25, 1, 0),
            #2. Ninis
            nini = ifelse(asiste_ci==0 & condocup_ci==3,1,0),
@@ -196,14 +195,6 @@ if (tipo == "censos") {
            age_18_23_edu = ifelse(edad_ci>=18 & edad_ci<=23 & !is.na(asiste_ci), 1, 0))
   
   
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_edu), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "geolev1","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_edu <- select(data_edu, all_of(select_column_names))
   
 }
 
@@ -211,10 +202,8 @@ if (tipo == "censos") {
 
 if (tipo == "encuestas") {
   
-  # creating a vector with initial column names
-  initial_column_names <- names(data_filt)
-  
-  data_edu <- data_filt %>% 
+
+  data_filt <- data_filt %>% 
     mutate(age_25_mas = ifelse(edad_ci>=25, 1, 0),
            #2. Ninis
            nini = ifelse(asiste_ci==0 & condocup_ci==3,1,0),
@@ -426,17 +415,6 @@ if (tipo == "encuestas") {
            age_15_29_edu = ifelse(edad_ci>=15 & edad_ci<=29 & !is.na(asiste_ci), 1, 0),
            age_18_24_edu = ifelse(edad_ci>=18 & edad_ci<=24 & !is.na(asiste_ci), 1, 0),
            age_18_23_edu = ifelse(edad_ci>=18 & edad_ci<=23 & !is.na(asiste_ci), 1, 0)) 
-  
-  
-  
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_edu), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "ine01","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_edu <- select(data_edu, all_of(select_column_names))
   
   
   

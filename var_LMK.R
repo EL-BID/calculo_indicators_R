@@ -7,7 +7,7 @@ if (tipo == "censos") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
   
-  data_lmk <- data_filt %>% 
+  data_filt <- data_filt %>%  
     mutate(npers = ifelse(TRUE,1,0),
            pet = ifelse(edad_ci>=15 & edad_ci<=64,1,0),
            pea = case_when((condocup_ci == 1 | condocup_ci == 2 ) & pet == 1 ~ 1,
@@ -114,14 +114,6 @@ if (tipo == "censos") {
                                   condocup_ci==1 & categopri_ci!=4 ~ 0)
            )
   
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_lmk), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c","geolev1","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_lmk <- select(data_lmk, all_of(select_column_names))
   
 }
 
@@ -130,9 +122,8 @@ if (tipo == "censos") {
 if (tipo == "encuestas") {
   
   # creating a vector with initial column names
-  initial_column_names <- names(data_filt)
-  
-  data_lmk <- data_filt %>% 
+
+  data_filt <- data_filt %>% 
     mutate(#1.1 Poblacion Total, en Edad de Trabajar - PET y economicamente activa PEA:
       npers = ifelse(TRUE,1,0),
       pet = ifelse(edad_ci>=15 & edad_ci<=64,1,0),
@@ -418,13 +409,5 @@ if (tipo == "encuestas") {
                                   TRUE ~ NA_real_)
     ) 
   
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_lmk), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "ine01","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_lmk <- select(data_lmk, all_of(select_column_names))
   
 }
