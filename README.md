@@ -18,12 +18,12 @@ Work on the assigned tasks, commit and push the changes to the `development` bra
 ## Calculating indicators
 
 To calculate indicators, create the folder Outputs and then there are two ways to calculate indicators depending on the amount of countries and years required:
-1. **Specific country, source of information and year**: Open the `runningScript.R`, and modify the variables *pais*, *year*, *type* and *geoLevel*.
-   - *pais*: To specify this use the ISO Alpha-3 code for the specific country (e.g. SLV for El Salvador) and for the second one add as a string the required time for the indicator.
-   - *year*: Specify as a string the required time for the indicator
+1. **Specific country, source of information and year**: Open the `runningScript.R`, and modify the variables *pais*, *year*, *type* and *geoLevel* after which execute the code `runningScript.R`.
+   - *pais*: To specify this use the ISO Alpha-3 code for the specific country (e.g. SLV for El Salvador).
+   - *year*: Specify as a string the required year for the indicator
    - *tipo*: Specify one of the two:"censos" or "encuestas" as strings depending if census or surveys are required. 
-   - *geoLevel1*: For census, specify if the indicators required at a country level or geolev1 indicating the first geographical disaggregation for the country. 
-3. **Loop through different countries and years**: Open the `runningScript_loop.R` and define the variable tipo with "encuestas" or "censos" depending on the data source type required. Then the code would be executed based on all the census or surveys available according to the `Inputs/running_survey.csv` or `Inputs/running_census.csv` files. 
+   - *geoLevel1*: For census, specify if the indicators to calculate will be disagregated at a country level or first geographical disagreggation. 
+3. **Loop through different countries and years**: Open the `runningScript_loop.R` and define the variable tipo with "encuestas" or "censos" depending on the data source type required. Then execute the code `runningScript_loop.R` and indicators will be calculated based on all the census or surveys available according to the `Inputs/running_survey.csv` or `Inputs/running_census.csv` files. 
 
 ## Repository Structure 
 
