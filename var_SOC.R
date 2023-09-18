@@ -179,7 +179,7 @@ if (tipo == "encuestas") {
       # Calculate hhfem_ch
       hhfem_ch = ifelse(hhywomen >= .5, 1, ifelse(is.na(yallsr18), NA, 0)),
       # remesas
-      indexrem = ifelse(jefe_ci == 1 & !is.na(remesas_ch) & remesas_ch > 0, 1, NA),
+      indexrem = ifelse(jefe_ci == 1 & !is.na(remesas_ch) & remesas_ch > 0, 1, ifelse(is.na(remesas_ch),NA_real_,0)),
       ylmprixh = ylmpri_ci / (horaspri_ci * 4.34),
       #vivienda 
       hacinamiento_ch = nmiembros_ch / cuartos_ch,
