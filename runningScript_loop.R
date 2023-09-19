@@ -7,6 +7,7 @@ library(srvyr)
 library(readxl)
 library(parallel)
 library(multidplyr)
+library(reldist)
 options(scipen = 999)
 # select between "censos"/"encuestas"
 tipo <- "censos"
