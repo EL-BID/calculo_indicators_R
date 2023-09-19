@@ -8,7 +8,7 @@ library(srvyr)
 library(readxl)
 library(parallel)
 library(multidplyr)
-
+library(reldist)
 
 pais<-"SLV"
 anio<-"2022"
