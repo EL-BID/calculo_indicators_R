@@ -188,19 +188,145 @@ if (tipo == "encuestas") {
     ) 
   
   # Calculate quintiles
+  # sum all the values of factor ci where ytot"
   data_filt <- data_filt %>%
-    arrange(pc_ytot_ch) %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(!is.na(ytot_ch),factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop = suma2 / sum(suma1)) %>%
     mutate(
-      quintile = cut(pc_ytot_ch, 
-                     breaks = quantile(pc_ytot_ch, 
-                                       probs = seq(0, 1, by = 0.2), 
-                                       na.rm = TRUE),
-                     include.lowest = TRUE,
-                     labels = c("quintile_1", "quintile_2", "quintile_3", "quintile_4", "quintile_5"))
+      quintile = case_when(
+        cumulative_weight_prop < 0.20 ~ "quintile_1",
+        cumulative_weight_prop < 0.40 ~ "quintile_2",
+        cumulative_weight_prop < 0.60 ~ "quintile_3",
+        cumulative_weight_prop < 0.80 ~ "quintile_4",
+        cumulative_weight_prop >= 0.80 ~ "quintile_5",
+        TRUE ~ NA_character_
+      )
     )
   
+  # Quintile_ci urban
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(zona_c==1 & !is.na(ytot_ch),factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop = suma2 / sum(suma1)) %>%
+    mutate(
+      quintile_ci_urban = case_when(
+        cumulative_weight_prop < 0.20 & zona_c==1 ~ "quintile_1_urban",
+        cumulative_weight_prop < 0.40 & zona_c==1 ~ "quintile_2_urban",
+        cumulative_weight_prop < 0.60 & zona_c==1 ~ "quintile_3_urban",
+        cumulative_weight_prop < 0.80 & zona_c==1 ~ "quintile_4_urban",
+        cumulative_weight_prop >= 0.80 & zona_c==1 ~ "quintile_5_urban",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # Quintile rural
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(zona_c==0 & !is.na(ytot_ch),factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop_rural = suma2 / sum(suma1)) %>%
+    mutate(
+      quintile_ci_rural = case_when(
+        cumulative_weight_prop_rural < 0.20 & zona_c==0 ~ "quintile_1_rural",
+        cumulative_weight_prop_rural < 0.40 & zona_c==0 ~ "quintile_2_rural",
+        cumulative_weight_prop_rural < 0.60 & zona_c==0 ~ "quintile_3_rural",
+        cumulative_weight_prop_rural < 0.80 & zona_c==0 ~ "quintile_4_rural",
+        cumulative_weight_prop_rural >= 0.80 & zona_c==0  ~ "quintile_5_rural",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # quintile_ch
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(jefe_ci==1 & !is.na(ytot_ch),factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop2 = (suma2 / sum(suma1))) %>%
+    mutate(
+      quintile_ch = case_when(
+        cumulative_weight_prop2 < 0.20 & jefe_ci==1 ~ "quintile_1_ch",
+        cumulative_weight_prop2 < 0.40 & jefe_ci==1 ~ "quintile_2_ch",
+        cumulative_weight_prop2 < 0.60 & jefe_ci==1 ~ "quintile_3_ch",
+        cumulative_weight_prop2 < 0.80 & jefe_ci==1 ~ "quintile_4_ch",
+        cumulative_weight_prop2 >= 0.80 & jefe_ci==1 ~ "quintile_5_ch",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # quintile_ch_urban
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(jefe_ci==1 & !is.na(ytot_ch) & zona_c==1,factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop2 = (suma2 / sum(suma1))) %>%
+    mutate(
+      quintile_ch_urban = case_when(
+        cumulative_weight_prop2 < 0.20 & jefe_ci==1 & zona_c==1 ~ "quintile_1_ch_urban",
+        cumulative_weight_prop2 < 0.40 & jefe_ci==1 & zona_c==1 ~ "quintile_2_ch_urban",
+        cumulative_weight_prop2 < 0.60 & jefe_ci==1 & zona_c==1 ~ "quintile_3_ch_urban",
+        cumulative_weight_prop2 < 0.80 & jefe_ci==1 & zona_c==1 ~ "quintile_4_ch_urban",
+        cumulative_weight_prop2 >= 0.80 & jefe_ci==1  & zona_c==1~ "quintile_5_ch_urban",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # quintile_ch_rural
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(jefe_ci==1 & !is.na(ytot_ch) & zona_c==0,factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop2 = (suma2 / sum(suma1))) %>%
+    mutate(
+      quintile_ch_rural = case_when(
+        cumulative_weight_prop2 < 0.20 & jefe_ci==1 & zona_c==0 ~ "quintile_1_ch_rural",
+        cumulative_weight_prop2 < 0.40 & jefe_ci==1 & zona_c==0 ~ "quintile_2_ch_rural",
+        cumulative_weight_prop2 < 0.60 & jefe_ci==1 & zona_c==0 ~ "quintile_3_ch_rural",
+        cumulative_weight_prop2 < 0.80 & jefe_ci==1 & zona_c==0 ~ "quintile_4_ch_rural",
+        cumulative_weight_prop2 >= 0.80 & jefe_ci==1  & zona_c==0~ "quintile_5_ch_rural",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # Calculate decile points
+  # sum all the values of factor ci where ytot"
+  # decile
+  data_filt <- data_filt %>%
+    arrange(pc_ytot_ch,idh_ch) %>%
+    mutate(suma1 = ifelse(!is.na(pc_ytot_ch),factor_ci,0),
+           suma2 = cumsum(suma1),
+           cumulative_weight_prop = suma2 / sum(factor_ci)) %>%
+    mutate(
+      decile_ci = case_when(
+        cumulative_weight_prop < 0.10 ~ 1,
+        cumulative_weight_prop < 0.20 ~ 2,
+        cumulative_weight_prop < 0.30 ~ 3,
+        cumulative_weight_prop < 0.40 ~ 4,
+        cumulative_weight_prop < 0.50 ~ 5,
+        cumulative_weight_prop < 0.60 ~ 6,
+        cumulative_weight_prop < 0.70 ~ 7,
+        cumulative_weight_prop < 0.80 ~ 8,
+        cumulative_weight_prop >=0.90 ~ 9,
+        TRUE ~ NA_real_
+      )
+    )
+  
+  
+  data_filt <- data_filt %>% group_by(decile_ci) %>%
+    mutate(
+      isminv2 = min(pc_ytot_ch, na.rm = T)
+    ) %>%
+    ungroup() %>%
+    mutate(percentil_points = case_when(
+      decile_ci == 2 & (isminv2 == pc_ytot_ch) ~ 10,
+      decile_ci == 6 & (isminv2 == pc_ytot_ch) ~ 50,
+      decile_ci == 9 & (isminv2 == pc_ytot_ch) ~ 90,
+      TRUE ~ NA_real_
+    ))
   data_filt <- data_filt %>% rename(isoalpha3 = pais_c,
-                                    year = anio_c)
+    year = anio_c)
   
 }
 
