@@ -127,7 +127,7 @@ if (tipo=="censos"){
 cl <- makeCluster(num_cores)
 
 # Export data, indicator definitions and the necessary functions to the cluster
-clusterExport(cl, c("data_filt", "indicator_definitions", "scl_pct", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter", "drop_na"))
+clusterExport(cl, c("data_filt", "indicator_definitions", "scl_pct","scl_pctv2","scl_ratio_decil", "scl_mean","scl_gini","calculate_indicators", "evaluatingFilter", "drop_na"))
 
 # Load necessary packages on each node of the cluster
 clusterEvalQ(cl, {
