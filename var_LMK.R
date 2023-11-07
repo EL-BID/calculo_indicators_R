@@ -7,7 +7,7 @@ if (tipo == "censos") {
   # creating a vector with initial column names
   initial_column_names <- names(data_filt)
   
-  data_lmk <- data_filt %>% 
+  data_filt <- data_filt %>%  
     mutate(npers = ifelse(TRUE,1,0),
            pet = ifelse(edad_ci>=15 & edad_ci<=64,1,0),
            pea = case_when((condocup_ci == 1 | condocup_ci == 2 ) & pet == 1 ~ 1,
@@ -18,7 +18,7 @@ if (tipo == "censos") {
                                edad_ci>=25 & edad_ci<65 ~"25_64",
                                edad_ci>=65 & edad_ci<99 ~"65+", 
                                TRUE ~NA_character_),
-           age_15_64_lmk = ifelse(edad_ci>=15 & edad_ci<65, "15_65", NA_real_), 
+           age_15_64_lmk = ifelse(edad_ci>=15 & edad_ci<65, "15_64", NA_real_), 
            age_15_29_lmk = ifelse(edad_ci>=15 & edad_ci<30, "15_29", NA_real_), 
            patron = case_when(condocup_ci==1 & categopri_ci==1 ~ 1, 
                               condocup_ci==1 & categopri_ci!=1 ~ 0),
@@ -55,7 +55,7 @@ if (tipo == "censos") {
              pais_c=="TTO"~ 4.619226
            ),
            #1.3 Salarios
-           ylm_ci = ifelse(is.na(ylmpri_ci),NA_real_,ylm_ci),
+           #ylm_ci = ifelse(is.na(ylmpri_ci),NA_real_,ylm_ci),
            ylab_ci = ifelse(pea==1 & emp_ci==1,ylm_ci,NA_real_),
            #1.4 Categorías de rama de actividad
            agro = case_when(
@@ -111,16 +111,9 @@ if (tipo == "censos") {
            ctapropia = case_when(condocup_ci==1 & categopri_ci==2 ~ 1, 
                                  condocup_ci==1 & categopri_ci!=2 ~ 0),
            sinremuner = case_when(condocup_ci==1 & categopri_ci==4 ~ 1, 
-                                  condocup_ci==1 & categopri_ci!=4 ~ 0))
+                                  condocup_ci==1 & categopri_ci!=4 ~ 0)
+           )
   
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_lmk), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "ine01","geolev1","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_lmk <- select(data_lmk, all_of(select_column_names))
   
 }
 
@@ -129,9 +122,8 @@ if (tipo == "censos") {
 if (tipo == "encuestas") {
   
   # creating a vector with initial column names
-  initial_column_names <- names(data_filt)
-  
-  data_lmk <- data_filt %>% 
+
+  data_filt <- data_filt %>% 
     mutate(#1.1 Poblacion Total, en Edad de Trabajar - PET y economicamente activa PEA:
       npers = ifelse(TRUE,1,0),
       pet = ifelse(edad_ci>=15 & edad_ci<=64,1,0),
@@ -144,7 +136,7 @@ if (tipo == "encuestas") {
                           edad_ci>=65 & edad_ci<120 ~"65+", 
                           TRUE ~NA_character_),
       #1.2 Diferente analisis de PET
-      age_15_64_lmk = ifelse(edad_ci>=15 & edad_ci<65, "15_65", NA_real_), 
+      age_15_64_lmk = ifelse(edad_ci>=15 & edad_ci<65, "15_64", NA_real_), 
       age_15_29_lmk = ifelse(edad_ci>=15 & edad_ci<30, "15_29", NA_real_), 
       #1.3 Personas con más de un empleo
       otraocup_ci = case_when(nempleos_ci >= 2 ~1,
@@ -200,9 +192,9 @@ if (tipo == "encuestas") {
       #1.6.3 Ingreso horario en la actividad principal USD
       hwage_ci = ifelse(condocup_ci==1,ylmpri_ci/(horaspri_ci*4.3),NA_real_),
       hwage_ppp=hwage_ci/ppp/ipc_c,
-      #1.6.4 Ingreso por pensión contributiva
+      #1.6.4 Ingreso por pensión contributiva USD
       ypen_ppp=ypen_ci/ppp/ipc_c,
-      #1.6.5 Salario mínimo mensual y horario - PPP
+      #1.6.5 Salario mínimo mensual y horario - USD PPP
       salmm_ppp=salmm_ci/ppp/ipc_c,
       hsmin_ci=salmm_ci/(5*8*4.3),
       hsmin_ppp=salmm_ppp/(5*8*4.3),
@@ -339,7 +331,7 @@ if (tipo == "encuestas") {
       desemplp_ci = case_when(
         condocup_ci !=2 ~ NA_real_,
         durades_ci>=12~ 1,
-        !is.na(durades_ci)~ 0,
+        durades_ci<12~ 0,
         durades1_ci==5 & pais_c=="ARG" & anio_c>=2003~ 1,
         condocup_ci==2 & pais_c=="ARG" & anio_c>=2003~ 0,
         TRUE ~ NA_real_
@@ -354,7 +346,7 @@ if (tipo == "encuestas") {
         condocup_ci==2 & cesante_ci==1 ~ 0,
         TRUE ~ NA_real_
       ),
-      #1.11 Anios de educacion
+      #1.11 Anios de educacion de la poblacion activa e inactiva
       aedupea_ci = ifelse(pea==1,aedu_ci,NA_real_),
       aedupei_ci = ifelse(condocup_ci==3,aedu_ci,NA_real_),
       #1.12 Formalidad laboral
@@ -376,54 +368,46 @@ if (tipo == "encuestas") {
                             (condocup_ci==1 | condocup_ci==2) ~ 0,
                             TRUE ~ NA_real_),
       #1.13 Antiguedad laboral
-      t1yr = case_when(antiguedad_ci<=1 & condocup_ci==1 ~ 1,
-                       antiguedad_ci>1 & condocup_ci==1 ~ 0,
+      t1yr = case_when(antiguedad_ci<=1 & condocup_ci==1 & !is.na(antiguedad_ci) ~ 1,
+                       antiguedad_ci>1 & condocup_ci==1 & !is.na(antiguedad_ci) ~ 0,
                        TRUE ~ NA_real_),
-      t1yrasal = case_when(antiguedad_ci<=1 & condocup_ci==1 & categopri_ci==3 ~ 1,
-                           antiguedad_ci>1 & condocup_ci==1 & categopri_ci==3 ~ 0,
+      t1yrasal = case_when(antiguedad_ci<=1 & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 1,
+                           antiguedad_ci>1 & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 0,
                            TRUE ~ NA_real_),
-      t1yrctapr = case_when(antiguedad_ci<=1 & condocup_ci==1 & categopri_ci==2~ 1,
-                            antiguedad_ci>1 & condocup_ci==1 & categopri_ci==2~ 0,
+      t1yrctapr = case_when(antiguedad_ci<=1 & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 1,
+                            antiguedad_ci>1 & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 0,
                             TRUE ~ NA_real_),
-      t1a5yr = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1~ 1,
-                         (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1~ 0,
+      t1a5yr = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1 & !is.na(antiguedad_ci) ~ 1,
+                         (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1 & !is.na(antiguedad_ci) ~ 0,
                          TRUE ~ NA_real_),
-      t1a5yrasal = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1 & categopri_ci==3~ 1,
-                             (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1 & categopri_ci==3~ 0,
+      t1a5yrasal = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 1,
+                             (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 0,
                              TRUE ~ NA_real_),
-      t1a5yrctapr = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1 & categopri_ci==2~ 1,
-                              (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1 & categopri_ci==2~ 0,
+      t1a5yrctapr = case_when(antiguedad_ci>1 & antiguedad_ci<5 & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 1,
+                              (antiguedad_ci<=1 | antiguedad_ci>=5) & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 0,
                               TRUE ~ NA_real_),
-      t5yr = case_when(antiguedad_ci>=5 & condocup_ci==1~ 1,
-                       antiguedad_ci<5 & condocup_ci==1~ 0,
+      t5yr = case_when(antiguedad_ci>=5 & condocup_ci==1 & !is.na(antiguedad_ci) ~ 1,
+                       antiguedad_ci<5 & condocup_ci==1 & !is.na(antiguedad_ci) ~ 0,
                        TRUE ~ NA_real_),
-      t5yrasal = case_when(antiguedad_ci>=5 & condocup_ci==1 & categopri_ci==3~ 1,
-                           antiguedad_ci<5 & condocup_ci==1 & categopri_ci==3~ 0,
+      t5yrasal = case_when(antiguedad_ci>=5 & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 1,
+                           antiguedad_ci<5 & condocup_ci==1 & categopri_ci==3 & !is.na(antiguedad_ci) ~ 0,
                            TRUE ~ NA_real_),
-      t5yrctapr = case_when(antiguedad_ci>=5 & condocup_ci==1 & categopri_ci==2~ 1,
-                            antiguedad_ci<5 & condocup_ci==1 & categopri_ci==2~ 0,
+      t5yrctapr = case_when(antiguedad_ci>=5 & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 1,
+                            antiguedad_ci<5 & condocup_ci==1 & categopri_ci==2 & !is.na(antiguedad_ci) ~ 0,
                             TRUE ~ NA_real_),
-      asal1yrtenure = case_when(condocup_ci==1 & categopri_ci==3 & antiguedad_ci<=1~ 1,
-                                condocup_ci==1 & antiguedad_ci<=1~ 0,
+      asal1yrtenure = case_when(condocup_ci==1 & categopri_ci==3 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 1,
+                                condocup_ci==1 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 0,
                                 TRUE ~ NA_real_),
-      ctapr1yrtenure = case_when(condocup_ci==1 & categopri_ci==2 & antiguedad_ci<=1~ 1,
-                                 condocup_ci==1 & antiguedad_ci<=1~ 0,
+      ctapr1yrtenure = case_when(condocup_ci==1 & categopri_ci==2 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 1,
+                                 condocup_ci==1 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 0,
                                  TRUE ~ NA_real_),
-      patron1yrtenure = case_when(condocup_ci==1 & categopri_ci==1 & antiguedad_ci<=1~ 1,
-                                  condocup_ci==1 & antiguedad_ci<=1~ 0,
+      patron1yrtenure = case_when(condocup_ci==1 & categopri_ci==1 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 1,
+                                  condocup_ci==1 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 0,
                                   TRUE ~ NA_real_),
-      sinrem1yrtenure = case_when(condocup_ci==1 & categopri_ci==4 & antiguedad_ci<=1~ 1,
-                                  condocup_ci==1 & antiguedad_ci<=1~ 0,
+      sinrem1yrtenure = case_when(condocup_ci==1 & categopri_ci==4 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 1,
+                                  condocup_ci==1 & antiguedad_ci<=1 & !is.na(antiguedad_ci) ~ 0,
                                   TRUE ~ NA_real_)
     ) 
   
-  # then select only added variables and specific columns
-  new_column_names <- setdiff(names(data_lmk), initial_column_names)
-  
-  select_column_names <- c(new_column_names, 
-                           "region_BID_c", "pais_c", "ine01","estrato_ci", "zona_c", "relacion_ci", 
-                           "idh_ch", "factor_ch", "factor_ci", "idp_ci")
-  
-  data_lmk <- select(data_lmk, all_of(select_column_names))
   
 }

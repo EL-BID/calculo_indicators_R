@@ -39,6 +39,8 @@ return(base)
 }
 
 if (tipo == "censos"){
- ##### to be done
+
+base <- paste("C:/Users/DCOR/OneDrive - Inter-American Development Bank Group/Documents/Indicadores encuestas de hogares/Indicadores/",pais,"/", pais,"_",anio, "_censusBID.dta",sep = "")  
+
 }
 }
