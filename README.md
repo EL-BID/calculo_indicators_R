@@ -22,7 +22,9 @@ To calculate indicators, create the folder Outputs and then there are two ways t
    - *year*: Specify as a string the required year for the indicator
    - *tipo*: Specify one of the two:"censos" or "encuestas" as strings depending if census or surveys are required. 
    - *geoLevel1*: For census, specify if the indicators to calculate will be disagregated at a country level or first geographical disagreggation. 
+
 3. **Loop through different countries and years**: Open the `runningScript.R` and define the variable tipo with "encuestas" or "censos" depending on the data source type required. Then execute the code `runningScript_loop.R` and indicators will be calculated based on all the census or surveys available according to the `Inputs/running_survey.csv` or `Inputs/running_census.csv` files. 
+
 
 ## Repository Structure 
 
@@ -32,7 +34,9 @@ This repository consists of three main parts.
 
 3. **Indicator Definitions (`idef.csv`)**: This file controls the computation of indicators. It contains the definition of each indicator.
 
+
 4. **Running Scripts**: `runningScript.R` runs the function in `scl_indicators.R`. `runningScript_loop.R` runs `scl_indicators.R` for a batch of countries
+
 
 5. **Functions**: These scripts stablish the functions required to calculate indicators.
    - `functions.R`: contains the functions to calculate indicators for ratios (scl_pct), means (scl_mean) and gini (scl_gini). As well as a function to execute all indicators in `idef.csv` (calculate_indicators) and a function to delimit the disagregations to execute (evaluatingFilter). 
