@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=EL-BID_calculo_indicators_R&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=EL-BID_calculo_indicators_R)
+
 # SCL Data - Data Ecosystem Working Group
 
 [![IDB Logo](https://scldata.iadb.org/assets/iadb-7779368a000004449beca0d4fc6f116cc0617572d549edf2ae491e9a17f63778.png)](https://scldata.iadb.org)
